@@ -1,9 +1,10 @@
 //jshint esversion:6
-require('dotenv').config();
+require('dotenv').config();// this is file which stores secret info in terms of environment variables.
 const express=require('express');
 const bodyParser=require('body-parser');
 const ejs=require('ejs');
-const encrypt = require('mongoose-encryption');
+const md5 = require('md5');//use for hashing the passwords when user login with email and username we can only see email and password will be converted into hash
+//const encrypt = require('mongoose-encryption');
 
 console.log(process.env.API_KEY);
 
@@ -17,7 +18,7 @@ app.use(bodyParser.urlencoded({
     extended:true
 }));
 
-mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true});
+mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true},{useUnifiedTopology: true});
 
 const userSchema = new mongoose.Schema({
     email:String,
@@ -25,7 +26,7 @@ const userSchema = new mongoose.Schema({
 });
 
 
-userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptionFields:["password"] });
+//userSchema.plugin(encrypt, { secret: process.env.SECRET, encryptionFields:["password"] });
 
 const User= new mongoose.model("User",userSchema);
 
@@ -43,7 +44,7 @@ app.post("/register",function(req,res){
     
     const newUser= new User({
         email:req.body.username,
-        password:req.body.password
+        password:md5(req.body.password)
     });
     newUser.save(function(err){
         if(err){
@@ -55,9 +56,10 @@ app.post("/register",function(req,res){
     });
 })
 
+
 app.post("/login",function(req,res){
-    const username=req.body.username;
-    const password=req.body.password;
+    const username = req.body.username;
+    const password = md5(req.body.password);
 
     User.findOne({email:username},function(err,foundUser){
         if(err){
