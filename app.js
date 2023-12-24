@@ -5,8 +5,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const session = require('express-session');
-const passport = require("passport");//Passport is Express-compatible authentication middleware for Node.js.
-const passportLocalMongoose = require("passport-local-mongoose");
+const passport = require("passport");//Passport is Express-compatible authentication middleware for Node.js.let you use different services with single set of credentials.
+const passportLocalMongoose = require("passport-local-mongoose");// used for user authentication
 
 const mongoose = require('mongoose');
 
@@ -109,16 +109,3 @@ app.post("/login",function(req,res){
 app.listen(3000,function(){
     console.log("server started at port 3000")
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
