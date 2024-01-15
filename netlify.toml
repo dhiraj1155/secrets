@@ -1,0 +1,3 @@
+[build]
+  command = "node app.js" # Adjust this to your build command
+  publish = "dist"          # Adjust this to your publish directory
