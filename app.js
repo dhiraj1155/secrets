@@ -1,4 +1,3 @@
-
 //jshint esversion:6
 require('dotenv').config();// this is file which stores secret info in terms of environment variables.
 const express = require('express');
@@ -45,7 +44,7 @@ userSchema.plugin(findOrCreate);
 const User = new mongoose.model("User",userSchema);
 
 passport.use(User.createStrategy());
-
+// serializeUser
 passport.serializeUser(function(user, cb) {
     process.nextTick(function() {
       return cb(null, {
@@ -55,34 +54,43 @@ passport.serializeUser(function(user, cb) {
       });
     });
   });
-  
+  // DeserializeUser
   passport.deserializeUser(function(user, cb) {
     process.nextTick(function() {
       return cb(null, user);
     });
   });
 
+// Configuring a new Google OAuth strategy for Passport
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
     callbackURL: "http://localhost:3000/auth/google/secrets",
-    userProfileURL:"https://www.googleapis.com/oauth2/v3/userinfo"
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
+  // Callback function executed upon successful Google authentication
   function(accessToken, refreshToken, profile, cb) {
+    // Logging user information associated with Gmail to the terminal
     console.log(profile);
+
+    // Using Mongoose's findOrCreate method to search for an existing user or create a new one
     User.findOrCreate({ googleId: profile.id }, function (err, user) {
+      // Returning the callback function with potential errors and the user object
       return cb(err, user);
     });
   }
 ));
 
+
 app.get("/",function(req,res){
     res.render("home");
 })
 
+
 app.get("/auth/google",
-    passport.authenticate("google",{scope:["profile"]})
-)
+    // Initiating Google OAuth authentication using Passport middleware
+    passport.authenticate("google", {scope: ["profile"]})
+);
 
 app.get('/auth/google/secrets', 
   passport.authenticate('google', { failureRedirect: '/login' }),
@@ -98,16 +106,22 @@ app.get("/register",function(req,res){
     res.render("register");
 })
 
-app.get("/secrets",function(req,res){
-    User.find({"secret":{$ne: null}}, function(err,foundUsers){
-        if(err){
+// Handling GET requests to the "/secrets" route
+app.get("/secrets", function(req, res) {
+    // Using Mongoose to find users with a non-null "secret" field in the database
+    User.find({"secret":{$ne: null}}, function(err, foundUsers) {
+        if (err) {
+            // If there's an error during the database query, log it to the console
             console.log(err);
         }
-        if(foundUsers){
+        if (foundUsers) {
+            // If users with non-null "secret" field are found, render the "secrets" view
+            // Pass the foundUsers array to the view for displaying user secrets
             res.render("secrets", {usersWithSecrets: foundUsers});
         }
     });
-})
+});
+
 
 app.get("/logout", function(req, res, next){
     
